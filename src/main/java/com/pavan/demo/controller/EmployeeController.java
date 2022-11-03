@@ -3,6 +3,8 @@ package com.pavan.demo.controller;
 import java.util.List;
 
 import com.pavan.demo.entity.Employee;
+import com.pavan.demo.exception.custom.BusinessException;
+import com.pavan.demo.exception.custom.ControllerException;
 import com.pavan.demo.service.EmployeeServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,39 +21,58 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/employee")
 public class EmployeeController {
+
 	@Autowired
 	private EmployeeServiceInterface employeeServiceInterface;
-	
+
 	@PostMapping("/save")
-	public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee){
-		Employee employeeSaved = employeeServiceInterface.addEmployee(employee);
-		return new ResponseEntity<Employee>(employeeSaved, HttpStatus.CREATED);
+	public ResponseEntity<?> addEmployee(@RequestBody Employee employee){
+		try {
+			Employee employeeSaved = employeeServiceInterface.addEmployee(employee);
+			return new ResponseEntity<Employee>(employeeSaved, HttpStatus.CREATED);
+		}catch (BusinessException e) {
+			ControllerException ce = new ControllerException(e.getErrorCode(),e.getErrorMessage());
+			return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
+		}catch (Exception e) {
+			ControllerException ce = new ControllerException("611","Something went wrong in controller");
+			return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
+		}
 	}
-	
+
 	@GetMapping("/all")
 	public ResponseEntity<List<Employee>> getAllEmployees(){
-		
+
 		List<Employee> listOfAllEmps = employeeServiceInterface.getAllEmployees();
 		return new ResponseEntity<List<Employee>>(listOfAllEmps, HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/emp/{empid}")
-	public ResponseEntity<Employee> getEmpById(@PathVariable("empid") Long empidL){
-		
-		Employee empRetrieved = employeeServiceInterface.getEmpById(empidL);
-		return new ResponseEntity<Employee>(empRetrieved, HttpStatus.OK);
+	public ResponseEntity<?> getEmpById(@PathVariable("empid") Long empidL){
+		try {
+			Employee empRetrieved = employeeServiceInterface.getEmpById(empidL);
+			return new ResponseEntity<Employee>(empRetrieved, HttpStatus.OK);
+		}catch (BusinessException e) {
+			ControllerException ce = new ControllerException(e.getErrorCode(),e.getErrorMessage());
+			return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
+		}catch (Exception e) {
+			ControllerException ce = new ControllerException("612","Something went wrong in controller");
+			return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
+		}
 	}
-	
+
 	@DeleteMapping("/delete/{empid}")
 	public ResponseEntity<Void> deleteEmpById(@PathVariable("empid") Long empidL){
-		
+
 		employeeServiceInterface.deleteEmpById(empidL);
 		return new ResponseEntity<Void>(HttpStatus.ACCEPTED);
 	}
-	
+
 	@PutMapping("/update")
 	public ResponseEntity<Employee> updateEmployee(@RequestBody Employee employee){
 		Employee employeeSaved = employeeServiceInterface.addEmployee(employee);
 		return new ResponseEntity<Employee>(employeeSaved, HttpStatus.CREATED);
 	}
+
+
+
 }
